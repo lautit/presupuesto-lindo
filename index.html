@@ -47,7 +47,7 @@
                 </div>
                 <div id="tableToImage" class="w-full flex-grow bg-white p-2 rounded-md border border-gray-200">
                     <table class="min-w-full text-left">
-                        <thead class="bg-gray-200 sticky top-0">
+                        <thead id="tableHeader" class="bg-gray-200 sticky top-0">
                             <tr>
                                 <th class="p-3 font-semibold tracking-wide">Producto</th>
                                 <th class="p-3 font-semibold tracking-wide">Precio</th>
@@ -60,7 +60,7 @@
                                 <td colspan="4" class="p-4 text-center text-gray-500">Esperando un JSON valido...</td>
                             </tr>
                         </tbody>
-                        <tfoot class="bg-gray-200 font-bold sticky bottom-0">
+                        <tfoot id="tableFooter" class="bg-gray-200 font-bold sticky bottom-0">
                             <tr>
                                 <td colspan="3" class="p-3 text-right">TOTAL</td>
                                 <td id="totalCell" class="p-3 text-blue-600">$0.00</td>
@@ -110,8 +110,11 @@
         const openInstructionsBtn = document.getElementById('openInstructionsBtn');
         const instructionsModal = document.getElementById('instructionsModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
-        const copyImageBtn = document.getElementById('copyImageBtn'); // Nuevo botón
-        const tableToImageDiv = document.getElementById('tableToImage'); // El div que contiene la tabla para capturar
+        const copyImageBtn = document.getElementById('copyImageBtn');
+        const tableToImageDiv = document.getElementById('tableToImage');
+        // --- NUEVOS ELEMENTOS ---
+        const tableHeader = document.getElementById('tableHeader');
+        const tableFooter = document.getElementById('tableFooter');
 
         // --- Initial JSON data for demonstration ---
         const initialJson = [
@@ -135,7 +138,7 @@
                 if (data.length === 0) {
                     productTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">El JSON esta vacio.</td></tr>`;
                     totalCell.textContent = '$0.00';
-                    copyImageBtn.disabled = true; // Deshabilitar si no hay datos
+                    copyImageBtn.disabled = true;
                     return;
                 }
 
@@ -161,7 +164,7 @@
                 });
                 
                 totalCell.textContent = `$${grandTotal.toLocaleString('es-AR')}`;
-                copyImageBtn.disabled = false; // Habilitar si hay datos válidos
+                copyImageBtn.disabled = false;
 
             } catch (error) {
                 const errorRow = `
@@ -173,7 +176,7 @@
                 `;
                 productTableBody.innerHTML = errorRow;
                 totalCell.textContent = '$0.00';
-                copyImageBtn.disabled = true; // Deshabilitar si hay error
+                copyImageBtn.disabled = true;
             }
         }
         
@@ -192,61 +195,63 @@
             }
         });
 
-        // --- Copy Image Button Logic ---
+        // --- LÓGICA DEL BOTÓN "COPIAR IMAGEN" (ACTUALIZADA) ---
         copyImageBtn.addEventListener('click', async () => {
             copyImageBtn.disabled = true;
             const originalText = copyImageBtn.querySelector('span').textContent;
             copyImageBtn.querySelector('span').textContent = 'Copiando...';
 
+            // 1. Quitar clases 'sticky' ANTES de la captura
+            tableHeader.classList.remove('sticky');
+            tableFooter.classList.remove('sticky');
+
             try {
-                // Capturar el contenido de 'tableToImageDiv'
                 const canvas = await html2canvas(tableToImageDiv, {
-                    scale: 2, // Aumenta la resolución para mejor calidad
-                    useCORS: true, // Importante si hay imágenes (no aplica aquí, pero es buena práctica)
-                    logging: false, // Desactiva los logs de html2canvas en la consola
-                    backgroundColor: '#ffffff' // Asegura un fondo blanco si el div tiene transparencia
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
                 });
 
-                // Convertir el canvas a un Blob de imagen (JPEG para WhatsApp)
                 canvas.toBlob(async (blob) => {
                     if (blob) {
                         try {
-                            const item = new ClipboardItem({ "image/png": blob }); // WhatsApp suele preferir PNG para pegar
+                            const item = new ClipboardItem({ "image/png": blob });
                             await navigator.clipboard.write([item]);
                             copyImageBtn.querySelector('span').textContent = '¡Copiado! ✅';
-                            setTimeout(() => {
-                                copyImageBtn.querySelector('span').textContent = originalText;
-                                copyImageBtn.disabled = false;
-                            }, 2000);
                         } catch (err) {
                             console.error('Error al copiar la imagen al portapapeles:', err);
-                            alert('No se pudo copiar la imagen al portapapeles. Prueba usar Ctrl+C después de pegar el JSON.');
+                            alert('No se pudo copiar la imagen al portapapeles.');
                             copyImageBtn.querySelector('span').textContent = originalText;
-                            copyImageBtn.disabled = false;
                         }
                     } else {
-                        console.error('Error: No se pudo generar el blob de la imagen.');
-                        alert('Error al generar la imagen. Intenta de nuevo.');
-                        copyImageBtn.querySelector('span').textContent = originalText;
-                        copyImageBtn.disabled = false;
+                        throw new Error('No se pudo generar el blob de la imagen.');
                     }
-                }, 'image/png'); // Exportar como PNG
+                }, 'image/png');
 
             } catch (error) {
                 console.error('Error al capturar la tabla como imagen:', error);
-                alert('Hubo un error al generar la imagen. Asegúrate de que los datos sean válidos.');
+                alert('Hubo un error al generar la imagen.');
                 copyImageBtn.querySelector('span').textContent = originalText;
-                copyImageBtn.disabled = false;
+            } finally {
+                // 2. Devolver las clases 'sticky' DESPUÉS de la captura (siempre)
+                tableHeader.classList.add('sticky');
+                tableFooter.classList.add('sticky');
+                
+                // Restaura el botón después de un tiempo
+                setTimeout(() => {
+                    copyImageBtn.querySelector('span').textContent = originalText;
+                    copyImageBtn.disabled = false;
+                }, 2000);
             }
         });
-
 
         // --- Event Listener for textarea ---
         jsonInput.addEventListener('input', updateTable);
         
         // --- Initial Load ---
         jsonInput.value = JSON.stringify(initialJson, null, 2);
-        updateTable(); // Llamada inicial para renderizar los datos de ejemplo
+        updateTable();
 
     </script>
 </body>
