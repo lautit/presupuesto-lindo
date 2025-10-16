@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto Lindo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Presupuestos Lindos 🧾</h1>
+            <p class="text-gray-600 mt-2">Usando un JSON desde el carrito de Mexx, arma una tablita linda.</p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8 h-[70vh]">
+
+            <div class="flex flex-col bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-3">
+                    <label for="jsonInput" class="text-lg font-semibold text-gray-900">JSON de Mexx</label>
+                    <button id="openInstructionsBtn" class="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white text-sm font-semibold rounded-md hover:bg-blue-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Instrucciones para generar el JSON</span>
+                    </button>
+                </div>
+                <textarea 
+                    id="jsonInput" 
+                    class="w-full flex-grow bg-gray-50 border border-gray-300 rounded-md p-4 text-gray-800 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Pega el JSON del carrito acá..."
+                ></textarea>
+            </div>
+
+            <div class="flex flex-col bg-white rounded-lg shadow-lg p-6 overflow-auto">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-semibold text-gray-900">Tablita linda</h2>
+                    <button id="copyImageBtn" class="flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white text-sm font-semibold rounded-md hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                        <span>Copiar como imagen</span>
+                    </button>
+                </div>
+                <div id="tableToImage" class="w-full flex-grow bg-white p-2 rounded-md border border-gray-200">
+                    <table class="min-w-full text-left">
+                        <thead class="bg-gray-200 sticky top-0">
+                            <tr>
+                                <th class="p-3 font-semibold tracking-wide">Producto</th>
+                                <th class="p-3 font-semibold tracking-wide">Precio</th>
+                                <th class="p-3 font-semibold tracking-wide">Cantidad</th>
+                                <th class="p-3 font-semibold tracking-wide">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <tr>
+                                <td colspan="4" class="p-4 text-center text-gray-500">Esperando un JSON valido...</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-gray-200 font-bold sticky bottom-0">
+                            <tr>
+                                <td colspan="3" class="p-3 text-right">TOTAL</td>
+                                <td id="totalCell" class="p-3 text-blue-600">$0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="instructionsModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-2xl p-8 max-w-2xl w-full relative">
+            <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Cómo generar y copiar el JSON del carrito 🛒</h2>
+            <p class="text-gray-600 mb-6">Para evitar errores de seguridad del navegador, la mejor forma es usar un "bookmarklet". Sigue estos 3 pasos:</p>
+            
+            <ol class="list-decimal list-inside space-y-4 text-gray-700">
+                <li>
+                    <strong>Crea un nuevo marcador en tu navegador.</strong><br>
+                    Haz clic derecho en tu barra de marcadores y selecciona "Añadir página" o "Añadir marcador".
+                    
+                </li>
+                <li>
+                    <strong>Configura el marcador.</strong><br>
+                    - En el campo <b>Nombre</b>, ponle algo como `Copiar Carrito Mexx`.<br>
+                    - En el campo <b>URL</b>, borra lo que haya y pega el siguiente código:
+                    <pre class="bg-gray-100 p-3 rounded-md text-sm text-gray-800 mt-2 overflow-x-auto"><code>javascript:(function(){const e=[...document.getElementsByClassName("table table-shopping")[0].children[1].childNodes].filter(e=>e?.classList?.contains("cart_item")).map(e=>({producto:[...e.children].filter(e=>e?.classList.contains("product-name"))[0].innerText.slice(0,-10),precio:[...e.children].filter(e=>e?.classList.contains("product-price"))[0].innerText.replace("$","").trim(),cantidad:[...e.children].filter(e=>e?.classList.contains("product-quantity"))[0].children[0].children[0].children[0].attributes.value.value}));const t=JSON.stringify(e,null,2);navigator.clipboard.writeText(t).then(()=>{alert("¡JSON del carrito copiado! ✅ Ya podés pegarlo en la herramienta.")}).catch(e=>{console.error("Error al intentar copiar el JSON:",e),alert("Hubo un error al copiar el JSON. Revisa la consola.")})})();</code></pre>
+                </li>
+                <li>
+                    <strong>¡Úsalo!</strong><br>
+                    Cuando estés en la página del carrito de Mexx, simplemente <b>haz clic en el marcador que creaste</b>. Te aparecerá una alerta confirmando que el JSON se copió. Luego, vuelve aquí y pégalo en el recuadro. ✨
+                </li>
+            </ol>
+        </div>
+    </div>
+    <script>
+        // --- DOM Element Selection ---
+        const jsonInput = document.getElementById('jsonInput');
+        const productTableBody = document.getElementById('productTableBody');
+        const totalCell = document.getElementById('totalCell');
+        const openInstructionsBtn = document.getElementById('openInstructionsBtn');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const copyImageBtn = document.getElementById('copyImageBtn'); // Nuevo botón
+        const tableToImageDiv = document.getElementById('tableToImage'); // El div que contiene la tabla para capturar
+
+        // --- Initial JSON data for demonstration ---
+        const initialJson = [
+            { "producto": "Ryzen 5 5600G", "precio": "205.000", "cantidad": 1 },
+            { "producto": "Mother Asrock A520M-HDV", "precio": "104.900", "cantidad": 1 },
+            { "producto": "Memoria GeiL DDR4 16GB 3200MHz", "precio": "67.000", "cantidad": 2 }
+        ];
+        
+        // --- Main Function to Update Table ---
+        function updateTable() {
+            const jsonString = jsonInput.value;
+            let grandTotal = 0;
+            
+            productTableBody.innerHTML = '';
+
+            try {
+                const data = JSON.parse(jsonString);
+
+                if (!Array.isArray(data)) throw new Error("JSON data is not an array.");
+                
+                if (data.length === 0) {
+                    productTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">El JSON esta vacio.</td></tr>`;
+                    totalCell.textContent = '$0.00';
+                    copyImageBtn.disabled = true; // Deshabilitar si no hay datos
+                    return;
+                }
+
+                data.forEach(item => {
+                    if (item.producto === undefined || item.precio === undefined || item.cantidad === undefined) return;
+
+                    const cleanPrice = item.precio.toString().replace(/\./g, ''); 
+                    const price = parseFloat(cleanPrice) || 0;
+                    const quantity = parseInt(item.cantidad) || 0;
+                    const subtotal = price * quantity;
+                    grandTotal += subtotal;
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200 hover:bg-gray-100';
+                    
+                    row.innerHTML = `
+                        <td class="p-3">${item.producto}</td>
+                        <td class="p-3 font-mono">$${price.toLocaleString('es-AR')}</td>
+                        <td class="p-3 font-mono text-center">${quantity}</td>
+                        <td class="p-3 font-mono">$${subtotal.toLocaleString('es-AR')}</td>
+                    `;
+                    productTableBody.appendChild(row);
+                });
+                
+                totalCell.textContent = `$${grandTotal.toLocaleString('es-AR')}`;
+                copyImageBtn.disabled = false; // Habilitar si hay datos válidos
+
+            } catch (error) {
+                const errorRow = `
+                    <tr>
+                        <td colspan="4" class="p-4 text-center text-red-600">
+                            JSON invalido. Revisa de nuevo.
+                        </td>
+                    </tr>
+                `;
+                productTableBody.innerHTML = errorRow;
+                totalCell.textContent = '$0.00';
+                copyImageBtn.disabled = true; // Deshabilitar si hay error
+            }
+        }
+        
+        // --- Modal Logic ---
+        openInstructionsBtn.addEventListener('click', () => {
+            instructionsModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            instructionsModal.classList.add('hidden');
+        });
+
+        instructionsModal.addEventListener('click', (event) => {
+            if (event.target === instructionsModal) {
+                instructionsModal.classList.add('hidden');
+            }
+        });
+
+        // --- Copy Image Button Logic ---
+        copyImageBtn.addEventListener('click', async () => {
+            copyImageBtn.disabled = true;
+            const originalText = copyImageBtn.querySelector('span').textContent;
+            copyImageBtn.querySelector('span').textContent = 'Copiando...';
+
+            try {
+                // Capturar el contenido de 'tableToImageDiv'
+                const canvas = await html2canvas(tableToImageDiv, {
+                    scale: 2, // Aumenta la resolución para mejor calidad
+                    useCORS: true, // Importante si hay imágenes (no aplica aquí, pero es buena práctica)
+                    logging: false, // Desactiva los logs de html2canvas en la consola
+                    backgroundColor: '#ffffff' // Asegura un fondo blanco si el div tiene transparencia
+                });
+
+                // Convertir el canvas a un Blob de imagen (JPEG para WhatsApp)
+                canvas.toBlob(async (blob) => {
+                    if (blob) {
+                        try {
+                            const item = new ClipboardItem({ "image/png": blob }); // WhatsApp suele preferir PNG para pegar
+                            await navigator.clipboard.write([item]);
+                            copyImageBtn.querySelector('span').textContent = '¡Copiado! ✅';
+                            setTimeout(() => {
+                                copyImageBtn.querySelector('span').textContent = originalText;
+                                copyImageBtn.disabled = false;
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Error al copiar la imagen al portapapeles:', err);
+                            alert('No se pudo copiar la imagen al portapapeles. Prueba usar Ctrl+C después de pegar el JSON.');
+                            copyImageBtn.querySelector('span').textContent = originalText;
+                            copyImageBtn.disabled = false;
+                        }
+                    } else {
+                        console.error('Error: No se pudo generar el blob de la imagen.');
+                        alert('Error al generar la imagen. Intenta de nuevo.');
+                        copyImageBtn.querySelector('span').textContent = originalText;
+                        copyImageBtn.disabled = false;
+                    }
+                }, 'image/png'); // Exportar como PNG
+
+            } catch (error) {
+                console.error('Error al capturar la tabla como imagen:', error);
+                alert('Hubo un error al generar la imagen. Asegúrate de que los datos sean válidos.');
+                copyImageBtn.querySelector('span').textContent = originalText;
+                copyImageBtn.disabled = false;
+            }
+        });
+
+
+        // --- Event Listener for textarea ---
+        jsonInput.addEventListener('input', updateTable);
+        
+        // --- Initial Load ---
+        jsonInput.value = JSON.stringify(initialJson, null, 2);
+        updateTable(); // Llamada inicial para renderizar los datos de ejemplo
+
+    </script>
+</body>
+</html>
