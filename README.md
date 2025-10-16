@@ -5,8 +5,8 @@ Una simple pero poderosa herramienta web para convertir el JSON del carrito de c
 <br>
 
 <p align="center">
-  <a href="[https://lautit.github.io/presupuesto-lindo/](https://www.google.com/search?q=https://lautit.github.io/presupuesto-lindo/)" target="_blank">
-    <img src="[https://img.shields.io/badge/Abrir%20Web-Presupuestos%20Lindos-blue?style=for-the-badge&logo=githubpages](https://www.google.com/search?q=https://img.shields.io/badge/Abrir%2520Web-Presupuestos%2520Lindos-blue%3Fstyle%3Dfor-the-badge%26logo%3Dgithubpages)" alt="Abrir Web App">
+  <a href="https://lautit.github.io/presupuesto-lindo/" target="_blank">
+    <img src="https://img.shields.io/badge/Abrir%2520Web-Presupuestos%2520Lindos-blue%3Fstyle%3Dfor-the-badge%26logo%3Dgithubpages" alt="Abrir Web App">
   </a>
 </p>
 
